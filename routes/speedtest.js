@@ -9,7 +9,7 @@ router.get('/empty',(req,res,next)=>{
         'Pragma'        : 'no-cache',
         'Connection'    : 'keep-alive'
     });
-    res.end();
+    res.end('...');
 })
 
 //phuong thuc upload test
@@ -55,8 +55,8 @@ router.get('/get-ip',(req,res,next)=>{
         ip=req.ip;
     }
 
-    console.log('ip raw:');
-    console.log(ip);
+    //console.log('ip raw:');
+    //console.log(ip);
 
     ip = ip.replace(/f+/, '').replace(/:+/, '');
 
@@ -72,14 +72,14 @@ router.get('/get-ip',(req,res,next)=>{
         }));
     }
 
-    console.log('ip:');
-    console.log(ip);
+    //console.log('ip:');
+    //console.log(ip);
 
     //lay thong tin cua dia chi ip
     getIsp(ip)
     .then(client_sever=>{
-        console.log('client_sever:');
-        console.log(client_sever);
+        //console.log('client_sever:');
+        //console.log(client_sever);
         res.end(JSON.stringify({
             processedString:(client_sever.client&&client_sever.client.org)?
                              client_sever.client.ip 
@@ -93,6 +93,7 @@ router.get('/get-ip',(req,res,next)=>{
         }));
     })
     .catch(err=>{
+        console.log(err);
         res.end(JSON.stringify({
             status:false,
             message:"Error to get ISP ip!",
@@ -134,25 +135,23 @@ function getIsp(ip){
     return new Promise((resolve,reject)=>{
         request('https://ipinfo.io/'+ip+'/json', function (error, response, body) {
             if (!error && response.statusCode == 200) {
-                console.log(body)
                var client = JSON.parse(body);
-               console.log('client') 
-               console.log(client)
                
-               if (client&&client.loc&&client.loc[0]&&client.loc[1]){
-                    console.log('Get Distance...') // Print the google web page.
+               if (client){
+                    //console.log('Get Distance...') // Print the google web page.
                     getServerDistance(client)
                     .then(server=>{
-                        console.log('server distance: ') // Print the google web page.
-                        console.log(server) // Print the google web page.
+                        //console.log('server distance: ') // Print the google web page.
+                        //console.log(server) // Print the google web page.
                         resolve({
                             client: client,
                             server: server,
-                            distance : server.distance
+                            distance : server.distance?server.distance:null
                         });
-                    });
+                    })
+                    .catch(err=>reject(err));
                 } else  {
-                    reject({err:'No Client location'})
+                    reject('No client found!');
                 }  
             } else {
                 console.log(error);
@@ -168,9 +167,10 @@ function getServerDistance(client){
         request('https://ipinfo.io/json', function (error, response, body) {
             if (!error && response.statusCode == 200) {
                var server = JSON.parse(body);
-               console.log('server') // Print the google web page.
-               console.log(server) // Print the google web page.
-               if (server&&server.loc&&server.loc[0]&&server.loc[1]){
+               //console.log('server') // Print the google web page.
+               //console.log(server) // Print the google web page.
+               if ( client&&client.loc&&client.loc[0]&&client.loc[1]&&
+                    server&&server.loc&&server.loc[0]&&server.loc[1]){
                    //khoang cach tu client den server
                    server.distance = getDistance(
                        server.loc[0]
@@ -178,11 +178,11 @@ function getServerDistance(client){
                        ,client.loc[0]
                        ,client.loc[1]);
                        
-                    console.log(server.distance) // Print the google web page.
-                    
+                    //console.log(server.distance) // Print the google web page.
+
                     resolve(server);
                }else{
-                reject({err:'No server Loction'});
+                    resolve(server);
                }
             } else {
                 console.log(error);

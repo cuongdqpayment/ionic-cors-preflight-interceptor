@@ -21,19 +21,32 @@ function main(isHttp, isHttps) {
   app.use(handlers.cors);
 
   const speedtest = require('./routes/speedtest');
-  app.use('/speedtest', speedtest); 
+  app.use('/api/speedtest', speedtest); 
   
 
   //ham tra loi cac dia chi khong co
   //The 404 Route (ALWAYS Keep this as the last route)
   app.all('*',(req, res) => {
     //gui trang thai bao noi dung tra ve
+    let ip;
+    if (req.headers["client_ip"]){
+      ip=req.headers["client_ip"];
+    }else if (req.headers["x-real-ip"]){
+        ip=req.headers["x-real-ip"];
+    }else if (req.headers["x-forwarded-for"]){
+        ip=req.headers["x-forwarded-for"];
+    }else if (req.headers["remote_add"]){
+        ip=req.headers["remote_add"];
+    }else{
+        ip=req.ip;
+    }
+
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end('<h1>Đừng tìm kiếm vô ích. Đố mầy hack đấy!</h1>Are You Lazy???');
+    res.end('<h1>Xin lỗi trang bạn muốn tìm không tồn tại!</h1>Địa chỉ ip của bạn là : ' + ip);
   });
 
   //ham xu ly loi cuoi cung
-  app.use(handlers.errorProcess);
+  //app.use(handlers.errorProcess);
 
   if (isHttp) {
     // your express configuration here
