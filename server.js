@@ -1,12 +1,7 @@
 const express = require('express');
 //const bodyParser = require('body-parser');
 const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const privateKey = fs.readFileSync('cert/private_key.pem', 'utf8');
-const certificate = fs.readFileSync('cert/certificate.pem', 'utf8');
 
-const credentials = { key: privateKey, cert: certificate };
 const os = require('os');
 
 const corsHandler = require('./cors/cors-handler');
@@ -28,21 +23,9 @@ function main(isHttp, isHttps) {
   //The 404 Route (ALWAYS Keep this as the last route)
   app.all('*',(req, res) => {
     //gui trang thai bao noi dung tra ve
-    let ip;
-    if (req.headers["client_ip"]){
-      ip=req.headers["client_ip"];
-    }else if (req.headers["x-real-ip"]){
-        ip=req.headers["x-real-ip"];
-    }else if (req.headers["x-forwarded-for"]){
-        ip=req.headers["x-forwarded-for"];
-    }else if (req.headers["remote_add"]){
-        ip=req.headers["remote_add"];
-    }else{
-        ip=req.ip;
-    }
-
+  
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end('<h1>Xin lỗi trang bạn muốn tìm không tồn tại!</h1>Địa chỉ ip của bạn là : ' + ip);
+    res.end('<h1>Xin lỗi trang bạn muốn tìm không tồn tại!</h1>Địa chỉ ip của bạn là : ' + req.clientIp);
   });
 
   //ham xu ly loi cuoi cung
@@ -51,6 +34,7 @@ function main(isHttp, isHttps) {
   if (isHttp) {
     // your express configuration here
     // For http
+    const http = require('http');
     const httpServer = http.createServer(app);
     const portHttp = process.env.PORT || isHttp;
     httpServer.listen(portHttp, () => {
@@ -64,6 +48,10 @@ function main(isHttp, isHttps) {
 
   if (isHttps) {
     // For https
+    const https = require('https');
+    const privateKey = fs.readFileSync('cert/private_key.pem', 'utf8');
+    const certificate = fs.readFileSync('cert/certificate.pem', 'utf8');
+    const credentials = { key: privateKey, cert: certificate };
     const portHttps = process.env.PORT || isHttps;
     const httpsServer = https.createServer(credentials, app);
     httpsServer.listen(portHttps, () => {

@@ -154,7 +154,6 @@ function getIsp(ip){
                     reject('No client found!');
                 }  
             } else {
-                console.log(error);
                 reject(error);
             }
         });
@@ -185,7 +184,6 @@ function getServerDistance(client){
                     resolve(server);
                }
             } else {
-                console.log(error);
                 reject(error);
             }
         });
