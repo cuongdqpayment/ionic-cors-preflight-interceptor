@@ -18,10 +18,12 @@ export class ResponseInterceptor implements HttpInterceptor {
     
     return next.handle(request).do((event: HttpEvent<any>) => {
       if (event instanceof HttpResponse) {
+        console.log('May chu cho phep va truy cap voi event:');
         console.log(event);
       }
     }, (err: any) => {
       if (err instanceof HttpErrorResponse) {
+        console.log('May chu Khong cho phep hoac loi:');
         console.log(err);
       }
     });
